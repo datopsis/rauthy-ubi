@@ -1,0 +1,180 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '31 6 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install lint tools
+        run: |
+          python3 -m pip install --require-hashes -r .github/requirements/pre-commit.txt
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y python3-rpm
+      - name: Check LF, syntax and security policy
+        run: |
+          python3 scripts/check-lf.py
+          pre-commit run --all-files --show-diff-on-failure
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
+          python3 scripts/artifacts.py validate-lock artifacts/locks/amd64.json
+          python3 scripts/artifacts.py validate-lock artifacts/locks/arm64.json
+  configuration-security:
+    name: configuration security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Scan configuration
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: config
+          scan-ref: .
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+  native:
+    name: image (${{ matrix.architecture }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: amd64
+            runner: ubuntu-24.04
+            machine: x86_64
+          - architecture: arm64
+            runner: ubuntu-24.04-arm
+            machine: aarch64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    env:
+      ARCHITECTURE: ${{ matrix.architecture }}
+      TEST_IMAGE: rauthy-ubi:test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Confirm native runner and space
+        env:
+          EXPECTED: ${{ matrix.machine }}
+        run: |
+          test "$(uname -m)" = "${EXPECTED}"
+          df -h
+      - name: Set up native BuildKit
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Acquire and verify locked inputs
+        id: inputs
+        env:
+          PREPARE_ONLY: true
+        run: bash scripts/build.sh
+      - name: Build source and frontend with upstream locks
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: Containerfile
+          load: true
+          tags: ${{ env.TEST_IMAGE }}
+          build-args: |
+            UBI_BUILDER=${{ steps.inputs.outputs.builder }}
+            UBI_RUNTIME=${{ steps.inputs.outputs.runtime }}
+            SOURCE_REVISION=${{ steps.inputs.outputs.revision }}
+            LOCK_SHA256=${{ steps.inputs.outputs.lock_sha256 }}
+          cache-from: type=gha,scope=rauthy-${{ matrix.architecture }}
+          cache-to: type=gha,mode=max,scope=rauthy-${{ matrix.architecture }}
+      - name: Build pinned PostgreSQL
+        run: bash scripts/build-postgres.sh
+      - name: Verify image provenance and size
+        run: python3 scripts/provenance.py
+      - name: Install test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y python3-cryptography python3-jwt python3-requests python3-argon2
+      - name: Run native functional and negative tests
+        run: /usr/bin/python3 tests/functional.py
+      - name: Generate SPDX SBOM
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: ${{ env.TEST_IMAGE }}
+          format: spdx-json
+          output-file: rauthy-${{ matrix.architecture }}.spdx.json
+          syft-version: v1.57.1
+          config: .syft.yaml
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Record all Trivy findings including source inventories
+        env:
+          TRIVY_INCLUDE_DEV_DEPS: true
+          TRIVY_LIST_ALL_PKGS: true
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.76.2
+          image-ref: ${{ env.TEST_IMAGE }}
+          format: json
+          output: trivy-all-${{ matrix.architecture }}.json
+          exit-code: '0'
+          ignore-unfixed: false
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          trivyignores: ''
+      - name: Record all Grype findings
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          sbom: rauthy-${{ matrix.architecture }}.spdx.json
+          output-format: json
+          output-file: grype-all-${{ matrix.architecture }}.json
+          severity-cutoff: negligible
+          only-fixed: false
+          fail-build: false
+          cache-db: true
+          grype-version: v0.121.3
+      - name: Require RPM, Rust and npm scan coverage
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: python3 scripts/check-scan-coverage.py
+      - name: Block fixable High and Critical; query uncertainty blocks
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        timeout-minutes: 11
+        run: bash scripts/run-vulnerability-gate.sh "${ARCHITECTURE}"
+      - name: Retain sanitized evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: evidence-${{ matrix.architecture }}-${{ github.sha }}
+          path: |
+            functional-*.json
+            provenance-*.json
+            *.spdx.json
+            trivy-all-*.json
+            grype-all-*.json
+            vulnerability-summary-*.json
+            vulnerability-summary-*.md
+            ubi-gate-probes-*.json
+          retention-days: 14
+          if-no-files-found: warn
+  image:
+    name: image
+    if: ${{ always() }}
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require both native architectures
+        env:
+          RESULT: ${{ needs.native.result }}
+        run: test "${RESULT}" = success

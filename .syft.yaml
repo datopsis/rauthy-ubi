@@ -1,0 +1,6 @@
+# Image cataloging must include the shipped source dependency inventories.
+select-catalogers:
+  - +rust-cargo-lock-cataloger
+  - +javascript-lock-cataloger
+javascript:
+  include-dev-dependencies: true
