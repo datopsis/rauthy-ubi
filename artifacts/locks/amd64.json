@@ -849,30 +849,17 @@
       "size": 19309
     },
     {
-      "name": "coreutils",
+      "name": "coreutils-single",
       "epoch": 0,
       "version": "8.32",
       "release": "43.el9",
       "architecture": "x86_64",
-      "nevra": "coreutils-0:8.32-43.el9.x86_64",
-      "filename": "coreutils-8.32-43.el9.x86_64.rpm",
+      "nevra": "coreutils-single-0:8.32-43.el9.x86_64",
+      "filename": "coreutils-single-8.32-43.el9.x86_64.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/c/coreutils-8.32-43.el9.x86_64.rpm",
-      "sha256": "bea4331d0ec6c9067d6162ff5a239b7420b8dfc0471a22d7103dc08de98918ef",
-      "size": 1219841
-    },
-    {
-      "name": "coreutils-common",
-      "epoch": 0,
-      "version": "8.32",
-      "release": "43.el9",
-      "architecture": "x86_64",
-      "nevra": "coreutils-common-0:8.32-43.el9.x86_64",
-      "filename": "coreutils-common-8.32-43.el9.x86_64.rpm",
-      "repository": "ubi-9-baseos-rpms",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/c/coreutils-common-8.32-43.el9.x86_64.rpm",
-      "sha256": "69d03ec47fb9d3b07b63b16f3bc51047f7c852ba81556482ed44141b5bb9fbee",
-      "size": 2120581
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/c/coreutils-single-8.32-43.el9.x86_64.rpm",
+      "sha256": "203f8a03955d6b2948e4770f80b573146b225b43f4aa9f10e1ae73753ce83573",
+      "size": 642153
     },
     {
       "name": "cpp",

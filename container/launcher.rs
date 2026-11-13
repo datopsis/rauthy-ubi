@@ -15,7 +15,7 @@ fn main() {
     if env::args().len() != 1 { fail("command overrides are unsupported"); }
     let mut command = Command::new("/usr/local/bin/rauthy");
     command.env_clear().args(["serve", "-c", "/etc/rauthy/production.toml"]);
-    for name in ["server.crt", "server.key", "ca.crt"] { required_file(name); }
+    for name in ["server.crt", "server.key", "cluster.crt", "cluster.key", "ca.crt"] { required_file(name); }
     for (name, key) in [
         ("pg-password", "PG_PASSWORD"), ("pg-ca.crt", "PG_TLS_ROOT_CA"),
         ("encryption-keys", "ENC_KEYS"), ("encryption-key-active", "ENC_KEY_ACTIVE"),

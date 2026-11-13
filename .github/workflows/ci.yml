@@ -95,9 +95,13 @@ jobs:
           format: spdx-json
           output-file: rauthy-${{ matrix.architecture }}.spdx.json
           syft-version: v1.51.1
+          config: .syft.yaml
           upload-artifact: false
           upload-release-assets: false
       - name: Record all Trivy findings including source inventories
+        env:
+          TRIVY_INCLUDE_DEV_DEPS: true
+          TRIVY_LIST_ALL_PKGS: true
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -120,6 +124,9 @@ jobs:
           fail-build: false
           cache-db: true
           grype-version: v0.118.0
+      - name: Require RPM, Rust and npm scan coverage
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: python3 scripts/check-scan-coverage.py
       - name: Block fixable High and Critical; query uncertainty blocks
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         timeout-minutes: 11

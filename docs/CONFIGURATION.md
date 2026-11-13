@@ -11,7 +11,8 @@ Mount `/run/secrets` read-only, readable by UID 10001. Required nonempty files:
 
 | File | Meaning |
 | --- | --- |
-| server.crt, server.key | PEM leaf chain and key for HTTPS and internal cache TLS |
+| server.crt, server.key | PEM leaf chain and key for public HTTPS |
+| cluster.crt, cluster.key | PEM chain and key for private cache TLS; SAN must cover localhost |
 | ca.crt | Trust for cache peers and outbound HTTPS; certificate must cover localhost |
 | pg-ca.crt | Explicit PostgreSQL CA bundle, independently configurable |
 | pg-password | PostgreSQL password |

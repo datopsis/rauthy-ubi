@@ -333,7 +333,7 @@ try:
     (WORK/'wrong-ca.crt').write_text(WRONG_CA)
     PG_PASSWORD, CLIENT_SECRET, USER_PASSWORD = [secrets.token_hex(32) for _ in range(3)]
     cert, key = LEAF(['localhost'])
-    for name, value in {'server.crt': cert, 'server.key': key, 'ca.crt': CA, 'pg-ca.crt': CA,
+    for name, value in {'server.crt': cert, 'server.key': key, 'cluster.crt': cert, 'cluster.key': key, 'ca.crt': CA, 'pg-ca.crt': CA,
                         'pg-password': PG_PASSWORD, 'raft-secret': secrets.token_hex(32),
                         'api-secret': secrets.token_hex(32), 'encryption-key-active': 'ci',
                         'encryption-keys': 'ci/'+base64.b64encode(secrets.token_bytes(32)).decode(),
@@ -369,6 +369,11 @@ try:
     eventually(lambda: 'ready to accept connections' in run('docker', 'logs', pg))
     SERVER = start()
     check('HTTPS readiness', lambda: eventually(ready))
+    def bootstrap_admin():
+        count = run('docker', 'exec', pg, 'psql', '-U', 'rauthy', '-d', 'rauthy', '-Atc',
+                    "SELECT count(*) FROM users WHERE email='admin@example.test' AND roles LIKE '%admin%'")
+        assert count == '1'
+    check('declarative administrator bootstrap persisted in PostgreSQL', bootstrap_admin)
     def discovery():
         global DISCOVERY
         r = request('GET', BASE+'/.well-known/openid-configuration')
