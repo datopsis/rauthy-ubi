@@ -14,5 +14,11 @@ for feature in spow md; do
 done
 mkdir -p templates/html static/v1
 npm --prefix frontend run build
+# Upstream deliberately permits a missing dataset ONLY to bootstrap this debug tool.
+# The release build below still requires the real generated dataset. No bypass or placeholder.
+CARGO_PROFILE_DEV_DEBUG=0 cargo run --frozen --bin fido-mds-prep -- \
+    --source /bundle/fido-mds.jwt --out assets/fido_mds/dataset.bin
+test -s assets/fido_mds/dataset.bin
+rm -rf target/debug
 cargo build --frozen --release --bin rauthy
 sha256sum --check /upstream-locks.sha256

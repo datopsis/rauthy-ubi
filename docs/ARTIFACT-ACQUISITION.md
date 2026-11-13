@@ -24,3 +24,12 @@ Borrowed security gate and tests come from datopsis/postgresql-lakekeeper-ubi.
 The gate records vendor-fixed RPM findings deferred for lack of a UBI fix and keeps
 unfixed findings in full reports. Deferral is a repository availability result,
 not an exemption or exploitability judgment. Missing scanner reports fail closed.
+
+The source archive does not contain the required FIDO MDS dataset. Its raw JWT
+feed is separately checksum-pinned, then transformed offline by upstream's debug
+`fido-mds-prep` bootstrap tool. The final release build still enforces a nonempty
+dataset. Upstream's transformer authenticates download transport but does **not**
+verify the JWT signature. This repository does not claim stronger publisher
+verification. The feed URL is mutable: preserve the verified bundle for historical
+rebuilds; a changed feed must fail checksum validation until an explicit lock
+refresh. FIDO metadata freshness/attestation policy is not production-qualified.

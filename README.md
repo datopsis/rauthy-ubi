@@ -33,8 +33,9 @@ Rust 1.95.0, Node 22.23.5 (bundled npm), wasm-bindgen 0.2.129, UBI image digests
 and runtime RPM NEVRAs and SHA-256. Acquisition verifies downloads; Rust uses
 `cargo fetch --locked` followed by `cargo build --frozen`; npm uses the unchanged
 upstream package-lock for acquisition and `npm ci --offline` in a network-disabled
-build stage. No upstream lockfile is patched. The FIDO metadata is the release's
-committed dataset; refreshing it is a separate upstream operation.
+build stage. No upstream lockfile is patched. FIDO metadata is a separately SHA-256-pinned feed snapshot, transformed offline
+by upstream's `fido-mds-prep` tool before the release build. The public feed is
+mutable: retain the verified acquisition bundle to rebuild after it rotates.
 
 Build-stage and runtime RPM closures are separately locked. Dependency acquisition
 is online; compilation is network-disabled. OpenSSL uses the locked UBI libraries
