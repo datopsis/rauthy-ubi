@@ -32,8 +32,11 @@ RUN test "$(node --version)" = "v22.23.5" \
 
 FROM acquire AS build
 COPY scripts/build-source.sh /build-source.sh
-COPY container/launcher.rs /launcher.rs
 RUN --network=none bash /build-source.sh
+
+FROM acquire AS launcher
+COPY container/launcher.rs /launcher.rs
+RUN --network=none rustc --edition 2024 -C opt-level=2 -C strip=symbols /launcher.rs -o /launcher
 
 FROM ${UBI_RUNTIME} AS micro
 FROM acquire AS runtime-root
@@ -62,7 +65,7 @@ LABEL org.opencontainers.image.title="Rauthy on Red Hat UBI 9" \
       io.datopsis.rauthy.upstream-revision="fe6bcb95192e8a83c29e2b525bf4960933bea3bd"
 COPY --from=runtime-root /runtime/ /
 COPY --from=build --chmod=0555 /src/target/release/rauthy /usr/local/bin/rauthy
-COPY --from=build --chmod=0555 /launcher /usr/local/bin/rauthy-launcher
+COPY --from=launcher --chmod=0555 /launcher /usr/local/bin/rauthy-launcher
 # Source inventories deliberately retained so scanners can see Rust and bundled JS.
 # They are declared dependency graphs, not a claim that all optional crates shipped.
 COPY --from=build /src/Cargo.lock /usr/share/rauthy/Cargo.lock

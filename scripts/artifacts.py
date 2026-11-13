@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import tarfile
 import urllib.request
 
 
@@ -45,6 +46,11 @@ def main():
     if args.mode == 'acquire':
         for item in lock['downloads'].values():
             acquire(item, args.output)
+        with tarfile.open(args.output / lock['downloads']['source']['filename']) as archive:
+            prefix = 'rauthy-' + lock['upstream']['commit'] + '/'
+            for name, digest in lock['upstream']['lockfiles'].items():
+                content = archive.extractfile(prefix + name).read()
+                assert hashlib.sha256(content).hexdigest() == digest, name
         for item in lock['packages']:
             acquire(item, args.output / 'rpms')
         for item in lock['build_packages']:

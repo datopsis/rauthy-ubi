@@ -27,6 +27,7 @@ IMAGE = os.environ['TEST_IMAGE']
 WORK = Path('.test-work/functional').resolve()
 REPORT = {}
 CONTAINERS = []
+REDACTIONS = set()
 NETWORK = 'rauthy-ci-' + secrets.token_hex(4)
 BASE = 'https://localhost:8443'
 ISSUER = BASE + '/auth/v1/'
@@ -42,6 +43,14 @@ def run(*args, check=True):
 
 
 def write(path, value, uid=10001):
+    def collect(v):
+        if isinstance(v, dict):
+            for item in v.values(): collect(item)
+        elif isinstance(v, list):
+            for item in v: collect(item)
+        elif isinstance(v, str) and len(v) >= 16:
+            REDACTIONS.add(v)
+    collect(value)
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         run('sudo', 'chown', str(os.getuid()), str(path))
@@ -390,6 +399,17 @@ try:
     check('PostgreSQL verify-full semantics: wrong CA and hostname refused', postgres_negative)
     check('missing TLS and required secrets fail closed', missing_inputs)
     check('expired server certificate refused with restored positive control', expired_certificate)
+except Exception:
+    # Only selected diagnostic lines, with every generated secret removed. No raw logs.
+    for container in CONTAINERS:
+        logs = run('docker', 'logs', container, check=False)
+        for value in sorted(REDACTIONS, key=len, reverse=True):
+            logs = logs.replace(value, '[REDACTED]')
+        logs = re.sub(r'[A-Za-z0-9_+/=-]{40,}(?:\.[A-Za-z0-9_+/=-]+)*', '[REDACTED]', logs)
+        lines = [line for line in logs.splitlines() if re.search(r'error|panic|warn|failed', line, re.I)]
+        print(container + ': ' + '\n'.join(lines)[-5000:], flush=True)
+    raise
+
 finally:
     # Never upload raw service logs, bootstrap material, keys or tokens.
     for container in CONTAINERS:

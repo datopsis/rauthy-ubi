@@ -7,10 +7,9 @@ for feature in spow md; do
     cargo build --frozen --release -p rauthy-wasm-modules --target wasm32-unknown-unknown --features "${feature}"
     mkdir -p "frontend/src/wasm/${feature}"
     wasm-bindgen target/wasm32-unknown-unknown/release/wasm.wasm \
-        --target web --out-dir "frontend/src/wasm/${feature}" --out-name "${feature}"
+        --target bundler --out-dir "frontend/src/wasm/${feature}" --out-name "${feature}"
 done
 mkdir -p templates/html static/v1
 npm --prefix frontend run build
 cargo build --frozen --release --bin rauthy
-rustc --edition 2024 -C opt-level=2 -C strip=symbols /launcher.rs -o /launcher
 sha256sum --check /upstream-locks.sha256

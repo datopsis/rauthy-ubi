@@ -5,7 +5,11 @@
   "upstream": {
     "version": "0.37.2",
     "tag": "v0.37.2",
-    "commit": "fe6bcb95192e8a83c29e2b525bf4960933bea3bd"
+    "commit": "fe6bcb95192e8a83c29e2b525bf4960933bea3bd",
+    "lockfiles": {
+      "Cargo.lock": "169a131e3add8284873b5feb51a4fec3e9e67a3434c11ed3a5b633429a9a2373",
+      "frontend/package-lock.json": "85083461668c837c35da81d979f11cb8434383c7878169bf3b0240b80044f2e0"
+    }
   },
   "toolchains": {
     "rust": "1.95.0",
@@ -114,34 +118,17 @@
       "source_rpm": "ca-certificates-2026.2.92_v9.0.319-90.3.el9_8.src.rpm"
     },
     {
-      "name": "coreutils",
+      "name": "coreutils-single",
       "epoch": 0,
       "version": "8.32",
       "release": "43.el9",
       "architecture": "aarch64",
-      "nevra": "coreutils-0:8.32-43.el9.aarch64",
-      "filename": "coreutils-8.32-43.el9.aarch64.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/c/coreutils-8.32-43.el9.aarch64.rpm",
+      "nevra": "coreutils-single-0:8.32-43.el9.aarch64",
+      "filename": "coreutils-single-8.32-43.el9.aarch64.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "size": 1179652,
-      "sha256": "e005bb6759879389f06cf7cf71f320042616aff09675553a6cb2be578560f04e",
-      "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "coreutils-8.32-43.el9.src.rpm"
-    },
-    {
-      "name": "coreutils-common",
-      "epoch": 0,
-      "version": "8.32",
-      "release": "43.el9",
-      "architecture": "aarch64",
-      "nevra": "coreutils-common-0:8.32-43.el9.aarch64",
-      "filename": "coreutils-common-8.32-43.el9.aarch64.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/c/coreutils-common-8.32-43.el9.aarch64.rpm",
-      "repository": "ubi-9-baseos-rpms",
-      "size": 2115401,
-      "sha256": "d4e6c015a2c6fc035cca9380c7de3eb3a1d716e2a3b497400923fa702b66387d",
-      "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "coreutils-8.32-43.el9.src.rpm"
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/c/coreutils-single-8.32-43.el9.aarch64.rpm",
+      "sha256": "543379203fdebe18f8c78497ba837387a362dc27c21be9e54e5503b3a303c373",
+      "size": 646017
     },
     {
       "name": "crypto-policies",
