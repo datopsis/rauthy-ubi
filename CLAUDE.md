@@ -2,7 +2,7 @@
 
 Read README.md, SECURITY.md and docs/CONFIGURATION.md before changing the profile.
 Keep the implementation aligned with datopsis/lakekeeper-ubi and
- datopsis/postgresql-lakekeeper-ubi security conventions.
+datopsis/postgresql-lakekeeper-ubi security conventions.
 
 Never weaken assertions or scanner gates, introduce exemptions, disable certificate
 verification, or change GitHub settings, permissions, secrets or branch protection.

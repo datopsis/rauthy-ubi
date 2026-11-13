@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 cd /src
+if test "$(uname -m)" = aarch64; then
+    export JEMALLOC_SYS_WITH_LG_PAGE=16
+fi
 # No resolver or network is available in this build stage.
 npm --prefix frontend ci --offline --ignore-scripts --no-audit --no-fund
 for feature in spow md; do

@@ -12,6 +12,7 @@ key_path = '/run/secrets/server.key'
 generate_self_signed = false
 [database]
 hiqlite = false
+health_check_delay = '0s'
 pg_tls = 'require'
 pg_tls_no_verify = false
 [cluster]

@@ -20,7 +20,7 @@ RUN sha256sum --check SHA256SUMS \
     && /toolchain/install.sh --prefix=/usr/local --disable-ldconfig \
     && tar -xf node.tar.xz -C /node --strip-components=1 \
     && tar -xf wasm-bindgen.tar.gz -C /wasm-tools --strip-components=1
-ENV PATH="/node/bin:/wasm-tools:/usr/local/bin:/usr/bin:/bin" CARGO_BUILD_JOBS=2 CARGO_HOME=/cargo
+ENV PATH="/node/bin:/wasm-tools:/usr/local/bin:/usr/bin:/bin" CARGO_BUILD_JOBS=2 CARGO_HOME=/cargo OPENSSL_NO_VENDOR=1
 WORKDIR /src
 RUN test "$(node --version)" = "v22.23.5" \
     && test "$(npm --version)" = "10.9.9" \

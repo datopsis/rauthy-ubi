@@ -13,6 +13,19 @@ fn fail(message: &str) -> ! {
 }
 fn main() {
     if env::args().len() != 1 { fail("command overrides are unsupported"); }
+    let public = env::var("PUB_URL").unwrap_or_else(|_| fail("missing PUB_URL"));
+    if public.is_empty() || !public.bytes().all(|c| c.is_ascii_alphanumeric() || b".-:".contains(&c)) {
+        fail("PUB_URL must be a DNS hostname with optional port");
+    }
+    if env::var("RP_ORIGIN").ok().as_deref() != Some(&format!("https://{public}")) {
+        fail("RP_ORIGIN must equal https://PUB_URL");
+    }
+    let host = env::var("PG_HOST").unwrap_or_else(|_| fail("missing PG_HOST"));
+    if host.is_empty() || !host.bytes().all(|c| c.is_ascii_alphanumeric() || b".-".contains(&c)) {
+        fail("PG_HOST must be a DNS hostname; local sockets are unsupported");
+    }
+    let admin = required_file("admin-password-argon2id");
+    if !admin.starts_with("$argon2id$") { fail("admin password must be an Argon2id hash"); }
     let mut command = Command::new("/usr/local/bin/rauthy");
     command.env_clear().args(["serve", "-c", "/etc/rauthy/production.toml"]);
     for name in ["server.crt", "server.key", "cluster.crt", "cluster.key", "ca.crt"] { required_file(name); }

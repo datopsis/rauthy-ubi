@@ -166,6 +166,7 @@ def verify(token, audience):
     claims = jwt.decode(token, jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key)),
                         algorithms=['RS256'], audience=audience, issuer=ISSUER,
                         options={'require': ['iss', 'aud', 'exp', 'iat', 'sub']})
+    assert claims['exp'] - claims['iat'] == 120
     assert 0 < claims['exp'] - time.time() <= 125
     return claims
 
@@ -259,7 +260,9 @@ def hardening():
 def persistence():
     before = verify(machine_token(), 'machine')
     keys = request('GET', DISCOVERY['jwks_uri']).json()
-    run('docker', 'restart', '-t', '40', SERVER)
+    run('docker', 'stop', '-t', '40', SERVER)
+    run('docker', 'restart', '-t', '40', pg)
+    run('docker', 'start', SERVER)
     eventually(ready)
     after = verify(machine_token(), 'machine')
     assert before['sub'] == after['sub']

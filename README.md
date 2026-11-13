@@ -37,7 +37,8 @@ build stage. No upstream lockfile is patched. The FIDO metadata is the release's
 committed dataset; refreshing it is a separate upstream operation.
 
 Build-stage and runtime RPM closures are separately locked. Dependency acquisition
-is online; compilation is network-disabled. Bit reproducibility is not yet proved. Source tarball checksums
+is online; compilation is network-disabled. OpenSSL uses the locked UBI libraries
+via the upstream-supported `OPENSSL_NO_VENDOR=1` build setting. Bit reproducibility is not yet proved. Source tarball checksums
 are recorded locally over HTTPS, not an upstream signature. Toolchain checksums
 come from the publishers' release metadata. See [artifact acquisition](docs/ARTIFACT-ACQUISITION.md).
 

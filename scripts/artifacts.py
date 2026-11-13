@@ -18,7 +18,9 @@ def validate(lock):
         assert item['url'].startswith('https://')
         assert re.fullmatch(r'[0-9a-f]{64}', item['sha256'])
         assert Path(item['filename']).name == item['filename']
-    assert len({p['nevra'] for p in lock['packages']}) == len(lock['packages'])
+    for section in ('packages', 'build_packages'):
+        assert lock[section]
+        assert len({p['nevra'] for p in lock[section]}) == len(lock[section])
     for p in [*lock['packages'], *lock['build_packages']]:
         assert p['architecture'] in (lock['rpm_architecture'], 'noarch')
         assert p['nevra'] == f"{p['name']}-{p['epoch']}:{p['version']}-{p['release']}.{p['architecture']}"
@@ -32,7 +34,8 @@ def acquire(item, directory):
         with urllib.request.urlopen(item['url'], timeout=120) as source, target.open('wb') as dest:
             while chunk := source.read(1024 * 1024):
                 dest.write(chunk)
-    assert hashlib.file_digest(target.open('rb'), 'sha256').hexdigest() == item['sha256'], target
+    with target.open('rb') as source:
+        assert hashlib.file_digest(source, 'sha256').hexdigest() == item['sha256'], target
 
 
 def main():
