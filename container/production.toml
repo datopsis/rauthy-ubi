@@ -1,0 +1,39 @@
+# Intentionally small, secure profile. The launcher supplies required secrets.
+[server]
+scheme = 'https'
+port_https = 8443
+http_workers = 2
+metrics_enable = false
+swagger_ui_enable = false
+proxy_mode = false
+[tls]
+cert_path = '/run/secrets/server.crt'
+key_path = '/run/secrets/server.key'
+generate_self_signed = false
+[database]
+hiqlite = false
+pg_tls = 'require'
+pg_tls_no_verify = false
+[cluster]
+node_id = 1
+nodes = ['1 localhost:8100 localhost:8200']
+data_dir = '/data'
+cache_storage_disk = true
+tls_raft_cert = '/run/secrets/server.crt'
+tls_raft_key = '/run/secrets/server.key'
+tls_api_cert = '/run/secrets/server.crt'
+tls_api_key = '/run/secrets/server.key'
+tls_auto_certificates = false
+tls_raft_danger_tls_no_verify = false
+tls_api_danger_tls_no_verify = false
+[bootstrap]
+bootstrap_dir = '/bootstrap'
+[logging]
+level = 'info'
+level_database = 'info'
+level_access = 'off'
+[http_client]
+danger_unencrypted = false
+danger_insecure = false
+[access]
+client_credentials_map_sub = true
