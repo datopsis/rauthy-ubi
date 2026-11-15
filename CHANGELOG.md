@@ -9,3 +9,6 @@
 - Rust scanned from the cargo-auditable crate list embedded in the binary; installed
   npm package manifests retained so Trivy and Grype both see the frontend inventory.
 - Native PostgreSQL fixture provisions a least-privileged `rauthy` role and database.
+- Non-blocking `build-time dependencies` CI report: High/Critical findings in the
+  full upstream lockfiles that are not shipped, with fixed version and build step.
+  It is in the job summary, and scheduled runs keep a tracking issue current.

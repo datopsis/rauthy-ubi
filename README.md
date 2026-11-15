@@ -83,6 +83,9 @@ the `rauthy` binary: the crates actually linked, excluding build-only dependenci
 The bundled frontend has no such record, so `/usr/share/rauthy/inventory` keeps the
 package.json of every npm package installed from the upstream lock, development
 tooling included. That JS inventory is conservative, not proof each package shipped.
+The non-required `build-time dependencies` job reports High/Critical findings in the
+full upstream lockfiles that are not shipped. It never blocks the image gate. See
+[SECURITY.md](SECURITY.md#build-time-dependency-audit-non-blocking).
 
 Install pre-commit using `.github/requirements/pre-commit.txt`, then run
 `pre-commit install --install-hooks`. All text uses LF. See [SECURITY.md](SECURITY.md)
