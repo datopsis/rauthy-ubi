@@ -254,7 +254,12 @@ def hardening():
             if fields[3] == '0A' and not fields[1].startswith('0B00007F:'):
                 ports.add(int(fields[1].split(':')[1], 16))
     assert ports == {8443, 8100, 8200}, ports
-    assert {m['Destination'] for m in obj['Mounts'] if m['RW']} == {'/data', '/tmp'}
+    # Docker reports bind mounts in Mounts and --tmpfs mounts only in HostConfig.Tmpfs.
+    mounts = {m['Destination']: m['RW'] for m in obj['Mounts']}
+    assert mounts == {'/data': True, '/run/secrets': False, '/bootstrap': False}, mounts
+    tmpfs = obj['HostConfig']['Tmpfs']
+    assert set(tmpfs) == {'/tmp'}, tmpfs
+    assert {'rw', 'noexec', 'nosuid'} <= set(tmpfs['/tmp'].split(',')), tmpfs
 
 
 def persistence():
