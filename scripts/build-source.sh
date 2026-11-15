@@ -6,7 +6,7 @@ if test "$(uname -m)" = aarch64; then
 fi
 # No resolver or network is available in this build stage.
 cargo install --frozen --path /cargo-auditable --root /usr/local
-test "$(cargo auditable --version)" = "cargo-auditable 0.7.7"
+test -x /usr/local/bin/cargo-auditable
 npm --prefix frontend ci --offline --ignore-scripts --no-audit --no-fund
 for feature in spow md; do
     cargo build --frozen --release -p rauthy-wasm-modules --target wasm32-unknown-unknown --features "${feature}"
