@@ -9,7 +9,9 @@ contact. Never put tokens, passwords, keys or identifying production logs in iss
 Both Trivy and Grype must execute successfully. Fixable High/Critical findings
 block: UBI-installable RPM fixes, every fixed non-RPM finding, and repository query
 errors. There are no exemptions or suppression files. Unfixed/deferred findings
-remain visible and must be monitored. Source inventories conservatively include
-optional/build dependencies; no binary-only scan is claimed to cover all Rust/JS.
+remain visible and must be monitored. Rust findings come from the binary's embedded
+cargo-auditable crate list, so build-only crates (for example the `zip` used by the
+utoipa-swagger-ui build script) are outside the image scan. The JS inventory
+conservatively includes development tooling.
 Do not modify upstream lockfiles without explicitly flagging the dependency change
 for the owner. Do not relax TLS, runtime, or CI checks to make a release pass.

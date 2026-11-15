@@ -4,7 +4,9 @@ Release discovery on 2026-11-13 used GitHub's releases/latest and git/ref/tags A
 v0.37.2 resolves to fe6bcb95192e8a83c29e2b525bf4960933bea3bd. Fetches use the commit
 archive URL and verify a recorded SHA-256; this is integrity pinning, not a publisher
 signature. Rust hashes come from channel-rust-1.95.0.toml; Node hashes from its
-SHASUMS256.txt; wasm-bindgen hashes from GitHub release asset metadata.
+SHASUMS256.txt; wasm-bindgen hashes from GitHub release asset metadata. The
+cargo-auditable 0.7.7 crate hash is the crates.io registry checksum; its own
+published Cargo.lock is fetched with `--locked` and built offline with `--frozen`.
 
 Runtime RPMs were resolved with weak dependencies disabled against UBI 9 BaseOS,
 AppStream, and CodeReady Builder, per architecture. NEVRAs and hashes are recorded

@@ -19,7 +19,9 @@ RUN sha256sum --check SHA256SUMS \
     && tar -xf rust-wasm.tar.xz -C /toolchain --strip-components=1 \
     && /toolchain/install.sh --prefix=/usr/local --disable-ldconfig \
     && tar -xf node.tar.xz -C /node --strip-components=1 \
-    && tar -xf wasm-bindgen.tar.gz -C /wasm-tools --strip-components=1
+    && tar -xf wasm-bindgen.tar.gz -C /wasm-tools --strip-components=1 \
+    && mkdir /cargo-auditable \
+    && tar -xf cargo-auditable.crate -C /cargo-auditable --strip-components=1
 ENV PATH="/node/bin:/wasm-tools:/usr/local/bin:/usr/bin:/bin" CARGO_BUILD_JOBS=2 CARGO_HOME=/cargo OPENSSL_NO_VENDOR=1
 WORKDIR /src
 RUN test "$(node --version)" = "v22.23.5" \
@@ -27,6 +29,7 @@ RUN test "$(node --version)" = "v22.23.5" \
     && rustc --version | grep -F "rustc 1.95.0 " \
     && sha256sum Cargo.lock frontend/package-lock.json > /upstream-locks.sha256 \
     && cargo fetch --locked \
+    && cargo fetch --locked --manifest-path /cargo-auditable/Cargo.toml \
     && npm --prefix frontend ci --ignore-scripts --no-audit --no-fund \
     && rm -rf frontend/node_modules
 
@@ -66,10 +69,10 @@ LABEL org.opencontainers.image.title="Rauthy on Red Hat UBI 9" \
 COPY --from=runtime-root /runtime/ /
 COPY --from=build --chmod=0555 /src/target/release/rauthy /usr/local/bin/rauthy
 COPY --from=launcher --chmod=0555 /launcher /usr/local/bin/rauthy-launcher
-# Source inventories deliberately retained so scanners can see Rust and bundled JS.
-# They are declared dependency graphs, not a claim that all optional crates shipped.
-COPY --from=build /src/Cargo.lock /usr/share/rauthy/Cargo.lock
-COPY --from=build /src/frontend/package-lock.json /usr/share/rauthy/frontend/package-lock.json
+# Rust: the rauthy binary embeds its linked crate list (cargo-auditable); scanners read it.
+# JS: package.json of every package npm installed from the unchanged upstream lock, dev
+# tooling included. A conservative inventory of the bundle's sources; metadata only.
+COPY --from=build /inventory/ /usr/share/rauthy/inventory/
 COPY container/production.toml /etc/rauthy/production.toml
 WORKDIR /data
 USER 10001:10001

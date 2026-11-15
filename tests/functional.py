@@ -34,8 +34,8 @@ ISSUER = BASE + '/auth/v1/'
 CALLBACK = 'https://client.example.test/callback'
 
 
-def run(*args, check=True):
-    p = subprocess.run(args, text=True, capture_output=True)
+def run(*args, check=True, stdin=None):
+    p = subprocess.run(args, text=True, capture_output=True, input=stdin)
     if check and p.returncode:
         # Docker logs and command arguments may contain credentials. Do not echo them.
         raise RuntimeError(f'{args[0]} {args[1]} failed ({p.returncode})')
@@ -343,7 +343,7 @@ try:
     WRONG_CA, _ = pki()
     (WORK/'ca.crt').write_text(CA)
     (WORK/'wrong-ca.crt').write_text(WRONG_CA)
-    PG_PASSWORD, CLIENT_SECRET, USER_PASSWORD = [secrets.token_hex(32) for _ in range(3)]
+    PG_PASSWORD, PG_SUPERUSER_PASSWORD, CLIENT_SECRET, USER_PASSWORD = [secrets.token_hex(32) for _ in range(4)]
     cert, key = LEAF(['localhost'])
     for name, value in {'server.crt': cert, 'server.key': key, 'cluster.crt': cert, 'cluster.key': key, 'ca.crt': CA, 'pg-ca.crt': CA,
                         'pg-password': PG_PASSWORD, 'raft-secret': secrets.token_hex(32),
@@ -354,7 +354,7 @@ try:
     cert, key = LEAF(['postgres'])
     write(WORK/'pg-tls/server.crt', cert, 26)
     write(WORK/'pg-tls/server.key', key, 26)
-    write(WORK/'pg-tls/password', PG_PASSWORD, 26)
+    write(WORK/'pg-tls/password', PG_SUPERUSER_PASSWORD, 26)
     write(WORK/'bootstrap/groups.json', [{'name': 'lake-readers'}])
     write(WORK/'bootstrap/users.json', [{'email': 'alice@example.test', 'password': {'Plain': USER_PASSWORD},
           'roles': ['user'], 'groups': ['lake-readers'], 'enabled': True, 'email_verified': True}])
@@ -376,13 +376,21 @@ try:
         '--network-alias', 'wrong-postgres', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges:true',
         '--tmpfs=/tmp:rw,noexec,nosuid,size=128m,uid=26,gid=0',
         '-v', f'{WORK/"pg-data"}:/var/lib/pgsql:rw', '-v', f'{WORK/"pg-tls"}:/tls:ro',
-        '-e', 'POSTGRES_USER=rauthy', '-e', 'POSTGRES_DB=rauthy', '-e', 'POSTGRES_PASSWORD_FILE=/tls/password',
+        '-e', 'POSTGRES_USER=postgres', '-e', 'POSTGRES_PASSWORD_FILE=/tls/password',
         '-e', 'POSTGRESQL_TLS_CERT_FILE=/tls/server.crt', '-e', 'POSTGRESQL_TLS_KEY_FILE=/tls/server.key', 'postgresql-ubi:test')
-    eventually(lambda: 'ready to accept connections' in run('docker', 'logs', pg))
+    def pg_serving():
+        # Initialization runs a socket-only server first; wait for the TCP listener's readiness.
+        logs = run('docker', 'logs', pg)
+        return 'ready to accept connections' in logs[logs.find('listening on IPv4 address'):]
+    eventually(pg_serving)
+    # Least privilege: Rauthy is a non-superuser login owning only its database.
+    run('docker', 'exec', '-i', pg, 'psql', '-h', '/tmp', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1',
+        stdin=f"CREATE ROLE rauthy LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '{PG_PASSWORD}';\n"
+              "CREATE DATABASE rauthy OWNER rauthy;\nREVOKE ALL ON DATABASE rauthy FROM PUBLIC;\n")
     SERVER = start()
     check('HTTPS readiness', lambda: eventually(ready))
     def bootstrap_admin():
-        count = run('docker', 'exec', pg, 'psql', '-U', 'rauthy', '-d', 'rauthy', '-Atc',
+        count = run('docker', 'exec', pg, 'psql', '-h', '/tmp', '-U', 'rauthy', '-d', 'rauthy', '-Atc',
                     "SELECT count(*) FROM users WHERE email='admin@example.test' AND roles LIKE '%admin%'")
         assert count == '1'
     check('declarative administrator bootstrap persisted in PostgreSQL', bootstrap_admin)
@@ -409,7 +417,7 @@ except Exception:
         for value in sorted(REDACTIONS, key=len, reverse=True):
             logs = logs.replace(value, '[REDACTED]')
         logs = re.sub(r'[A-Za-z0-9_+/=-]{40,}(?:\.[A-Za-z0-9_+/=-]+)*', '[REDACTED]', logs)
-        lines = [line for line in logs.splitlines() if re.search(r'error|panic|warn|failed', line, re.I)]
+        lines = [line for line in logs.splitlines() if re.search(r'error|panic|warn|failed|fatal', line, re.I)]
         print(container + ': ' + '\n'.join(lines)[-5000:], flush=True)
     raise
 

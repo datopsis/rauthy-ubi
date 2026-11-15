@@ -78,8 +78,11 @@ Trivy and Grype independently block fixable High/Critical findings. An RPM vendo
 fix is actionable only when it is available from the native UBI repositories;
 query errors block. Non-RPM fixes always block. No exemption lists are accepted.
 Full scanner JSON, sanitized assertions, SPDX, provenance and sizes are retained
-as CI artifacts. Source dependency inventories are conservative graphs, not proof
-that every optional crate or npm development package is in the executable.
+as CI artifacts. Rust is scanned from the crate list cargo-auditable 0.7.7 embeds in
+the `rauthy` binary: the crates actually linked, excluding build-only dependencies.
+The bundled frontend has no such record, so `/usr/share/rauthy/inventory` keeps the
+package.json of every npm package installed from the upstream lock, development
+tooling included. That JS inventory is conservative, not proof each package shipped.
 
 Install pre-commit using `.github/requirements/pre-commit.txt`, then run
 `pre-commit install --install-hooks`. All text uses LF. See [SECURITY.md](SECURITY.md)

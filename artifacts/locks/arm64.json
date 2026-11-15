@@ -15,7 +15,8 @@
     "rust": "1.95.0",
     "node": "22.23.5",
     "npm": "10.9.9",
-    "wasm_bindgen": "0.2.129"
+    "wasm_bindgen": "0.2.129",
+    "cargo_auditable": "0.7.7"
   },
   "base_images": {
     "builder": {
@@ -61,6 +62,11 @@
       "filename": "fido-mds.jwt",
       "blob_number": 301,
       "next_update": "2026-12-01"
+    },
+    "cargo-auditable": {
+      "url": "https://static.crates.io/crates/cargo-auditable/cargo-auditable-0.7.7.crate",
+      "sha256": "ccdd489bc94d1338cd04389a842e00661300331ec915fb376b4810ef7d480b5d",
+      "filename": "cargo-auditable.crate"
     }
   },
   "packages": [

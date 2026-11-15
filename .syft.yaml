@@ -1,6 +1,4 @@
-# Image cataloging must include the shipped source dependency inventories.
+# Image cataloging must include the shipped binary and frontend dependency inventories.
 select-catalogers:
-  - +rust-cargo-lock-cataloger
-  - +javascript-lock-cataloger
-javascript:
-  include-dev-dependencies: true
+  - +cargo-auditable-binary-cataloger
+  - +javascript-package-cataloger
