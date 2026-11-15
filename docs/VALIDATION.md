@@ -40,6 +40,17 @@ fix. Grype RPM 7 Medium + 20 Low not fixed or won't fix; Grype npm 4 Medium +
 3 Low fixed, 1 Low not fixed. The npm findings are in the conservative
 frontend inventory, which includes development tooling.
 
+## Build-time dependency audit
+
+Separate from the gate above and non-blocking. The `build-time dependencies` job
+scans the full upstream lockfiles. It reports High/Critical findings absent from
+both shipped inventories, with build-step attribution. Results are in the job
+summary and the `build-time-audit-<sha>` artifact. Scheduled runs on `main` update
+the tracking issue. Missing inputs or insufficient lockfile coverage make the job
+error, never report clean. Known build-time finding when introduced: `zip` 3.0.0
+(CVE-2026-115905 Critical, CVE-2026-115909 High), a build-dependency of
+utoipa-swagger-ui.
+
 ## Limits
 
 Image sizes: amd64 130.8 MB, arm64 123.5 MB. Bit reproducibility, HA, upgrades

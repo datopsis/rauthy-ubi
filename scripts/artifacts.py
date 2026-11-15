@@ -38,22 +38,33 @@ def acquire(item, directory):
         assert hashlib.file_digest(source, 'sha256').hexdigest() == item['sha256'], target
 
 
+def verify_source(lock, directory):
+    with tarfile.open(directory / lock['downloads']['source']['filename']) as archive:
+        prefix = 'rauthy-' + lock['upstream']['commit'] + '/'
+        for name, digest in lock['upstream']['lockfiles'].items():
+            content = archive.extractfile(prefix + name).read()
+            assert hashlib.sha256(content).hexdigest() == digest, name
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('mode', choices=['validate-lock', 'acquire'])
+    parser.add_argument('mode', choices=['validate-lock', 'acquire', 'acquire-source'])
     parser.add_argument('lock', type=Path)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     lock = json.loads(args.lock.read_text())
     validate(lock)
+    if args.mode == 'acquire-source':
+        # Only the verified upstream source tree, for lockfile audits. No toolchains or RPMs.
+        acquire(lock['downloads']['source'], args.output)
+        verify_source(lock, args.output)
+        with tarfile.open(args.output / lock['downloads']['source']['filename']) as archive:
+            archive.extractall(args.output / 'src', filter='data')
+        return
     if args.mode == 'acquire':
         for item in lock['downloads'].values():
             acquire(item, args.output)
-        with tarfile.open(args.output / lock['downloads']['source']['filename']) as archive:
-            prefix = 'rauthy-' + lock['upstream']['commit'] + '/'
-            for name, digest in lock['upstream']['lockfiles'].items():
-                content = archive.extractfile(prefix + name).read()
-                assert hashlib.sha256(content).hexdigest() == digest, name
+        verify_source(lock, args.output)
         for item in lock['packages']:
             acquire(item, args.output / 'rpms')
         for item in lock['build_packages']:
