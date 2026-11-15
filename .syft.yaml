@@ -1,0 +1,4 @@
+# Image cataloging must include the shipped binary and frontend dependency inventories.
+select-catalogers:
+  - +cargo-auditable-binary-cataloger
+  - +javascript-package-cataloger

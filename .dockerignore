@@ -1,0 +1,5 @@
+.git
+.test-work
+security-results
+**/__pycache__
+.env

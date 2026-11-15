@@ -1,0 +1,13 @@
+.artifact-bundle/
+.test-work/
+__pycache__/
+*.pyc
+.env
+security-results/
+*-all-*.json
+*-summary-*.json
+*-summary-*.md
+ubi-gate-probes-*.json
+functional-*.json
+provenance-*.json
+*.spdx.json
