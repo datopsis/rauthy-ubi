@@ -31,7 +31,9 @@ Mount bootstrap JSON at `/bootstrap` read-only. Upstream recognizes `clients.jso
 `users.json`, `groups.json`, `roles.json`, `scopes.json`, `user_attributes.json`, and
 `api_keys.json`. The upstream release's
 [types](https://github.com/sebadob/rauthy/blob/v0.37.2/src/data/src/migration/bootstrap/types.rs)
-are the schema. A client without a secret is public and uses S256 PKCE; a machine
+are the schema. With PostgreSQL every bootstrap user needs `given_name`: the JSON type
+makes it optional, but upstream's PostgreSQL `users.given_name` column is NOT NULL and
+startup aborts on the failed insert. A client without a secret is public and uses S256 PKCE; a machine
 client needs an independent 64-character secret and the `client_credentials` flow.
 Include `groups` in scopes for human group claims. Machine tokens have a mapped
 subject but do not inherit human groups. Bootstrap is initial provisioning, not

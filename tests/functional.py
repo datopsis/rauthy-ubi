@@ -356,7 +356,7 @@ try:
     write(WORK/'pg-tls/server.key', key, 26)
     write(WORK/'pg-tls/password', PG_SUPERUSER_PASSWORD, 26)
     write(WORK/'bootstrap/groups.json', [{'name': 'lake-readers'}])
-    write(WORK/'bootstrap/users.json', [{'email': 'alice@example.test', 'password': {'Plain': USER_PASSWORD},
+    write(WORK/'bootstrap/users.json', [{'email': 'alice@example.test', 'given_name': 'Alice', 'password': {'Plain': USER_PASSWORD},
           'roles': ['user'], 'groups': ['lake-readers'], 'enabled': True, 'email_verified': True}])
     clients = []
     for client in ('machine', 'public-pkce'):
