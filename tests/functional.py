@@ -278,11 +278,14 @@ def persistence():
 def postgres_negative():
     # Each new process must connect to PG; no warmed connection pool can mask failure.
     run('docker', 'stop', '-t', '40', SERVER)
-    for case in ('ca', 'hostname'):
+    # tokio-postgres reports only "error performing TLS handshake"; the specific rejection is
+    # proven by the TLS alert Rauthy's rustls client sends, as logged by PostgreSQL.
+    for case, alert in (('ca', 'alert unknown ca'), ('hostname', 'alert bad certificate')):
         dest = WORK/('secrets-'+case)
         run('sudo', 'cp', '-a', str(WORK/'secrets'), str(dest))
         if case == 'ca':
             write(dest/'pg-ca.crt', WRONG_CA)
+        pg_before = len(run('docker', 'logs', pg))
         bad = start('bad-pg-'+case, dest, 'wrong-postgres' if case == 'hostname' else 'postgres')
         time.sleep(15)
         ip = inspect(bad)['NetworkSettings']['Networks'][NETWORK].get('IPAddress')
@@ -292,8 +295,11 @@ def postgres_negative():
                     raise AssertionError('started despite invalid database TLS')
             except (ConnectionRefusedError, TimeoutError):
                 pass
-        logs = run('docker', 'logs', bad)
-        assert re.search(r'certificate|UnknownIssuer|NotValidForName|invalid peer', logs, re.I)
+        eventually(lambda: not inspect(bad)['State']['Running'], 30)
+        assert inspect(bad)['State']['ExitCode'] != 0
+        assert 'error performing TLS handshake' in run('docker', 'logs', bad)
+        pg_logs = run('docker', 'logs', pg)[pg_before:]
+        assert re.search(r'could not accept SSL connection: .*' + alert, pg_logs), case
         run('docker', 'rm', '-f', bad)
     run('docker', 'start', SERVER)
     eventually(ready)
