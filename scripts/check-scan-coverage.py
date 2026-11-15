@@ -8,7 +8,7 @@ import json
 import os
 from pathlib import Path
 
-MINIMUM = {'rpm': 30, 'cargo': 300, 'npm': 100}
+MINIMUM = {'rpm': 30, 'cargo': 500, 'npm': 100}
 arch = os.environ['ARCHITECTURE']
 spdx = json.loads(Path(f'rauthy-{arch}.spdx.json').read_text())
 purls = [ref['referenceLocator'] for p in spdx['packages'] for ref in p.get('externalRefs', [])
