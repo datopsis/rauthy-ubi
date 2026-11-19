@@ -1,0 +1,26 @@
+{
+  "previous_serial": 301,
+  "feed": {
+    "url": "https://mds.fidoalliance.org/",
+    "sha256": "d2ad4e42a8afbd74a34b3e997ae46d43df9e046f8a5bf1feda97206d8c84e0bb",
+    "filename": "fido-mds.jwt",
+    "blob_number": 302,
+    "next_update": "2026-12-01"
+  },
+  "root_der_sha256": "4fa3126d8d3a11d1c4855a4f807cbad6cf919d3a5a88b03bea2c6372d93c40c9",
+  "verified_at": "2026-11-19T04:33:15.707298+00:00",
+  "verification": "RS256; pinned R46 RFC5280 chain; signing hostname; validity; full signing-path CRLs; serial; nextUpdate",
+  "crls": [
+    {
+      "url": "https://crl.globalsign.com/gsgccr46evtlsca2025.crl",
+      "sha256": "250f47adf8d66d2985edf97d4eae1d9bf2daf1c06ac81c5c704e71d0bbbb1dfe",
+      "validity": "lastUpdate=Nov 18 12:19:44 2026 GMT\nnextUpdate=Nov 25 12:19:43 2026 GMT"
+    },
+    {
+      "url": "https://crl.globalsign.com/rootr46.crl",
+      "sha256": "16736ee5acdb8f200195025c4ef7c55a73b70f34a85a995ee9a1152c60cbbe62",
+      "validity": "lastUpdate=Oct  7 00:00:00 2026 GMT\nnextUpdate=Jan 15 00:00:00 2027 GMT"
+    }
+  ],
+  "patch": "--- artifacts/locks/amd64.json\n+++ artifacts/locks/amd64.json\n@@ -58,9 +58,9 @@\n     },\n     \"fido-mds\": {\n       \"url\": \"https://mds.fidoalliance.org/\",\n-      \"sha256\": \"bcdf74e5c25d529de6007f1e49b53bed01d38ce57452e2585f71c7fd95ff0b09\",\n+      \"sha256\": \"d2ad4e42a8afbd74a34b3e997ae46d43df9e046f8a5bf1feda97206d8c84e0bb\",\n       \"filename\": \"fido-mds.jwt\",\n-      \"blob_number\": 301,\n+      \"blob_number\": 302,\n       \"next_update\": \"2026-12-01\"\n     },\n     \"cargo-auditable\": {\n--- artifacts/locks/arm64.json\n+++ artifacts/locks/arm64.json\n@@ -58,9 +58,9 @@\n     },\n     \"fido-mds\": {\n       \"url\": \"https://mds.fidoalliance.org/\",\n-      \"sha256\": \"bcdf74e5c25d529de6007f1e49b53bed01d38ce57452e2585f71c7fd95ff0b09\",\n+      \"sha256\": \"d2ad4e42a8afbd74a34b3e997ae46d43df9e046f8a5bf1feda97206d8c84e0bb\",\n       \"filename\": \"fido-mds.jwt\",\n-      \"blob_number\": 301,\n+      \"blob_number\": 302,\n       \"next_update\": \"2026-12-01\"\n     },\n     \"cargo-auditable\": {\n"
+}

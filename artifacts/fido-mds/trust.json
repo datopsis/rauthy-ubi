@@ -1,0 +1,10 @@
+{
+  "root_source": "https://secure.globalsign.com/cacert/rootr46.crt",
+  "root_documentation": "https://fidoalliance.org/metadata/",
+  "root_der_sha256": "4fa3126d8d3a11d1c4855a4f807cbad6cf919d3a5a88b03bea2c6372d93c40c9",
+  "crl_urls": [
+    "https://crl.globalsign.com/gsgccr46evtlsca2025.crl",
+    "https://crl.globalsign.com/rootr46.crl"
+  ],
+  "signing_hostname": "mds.fidoalliance.org"
+}

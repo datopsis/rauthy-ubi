@@ -36,6 +36,7 @@ console.log(`npm package manifests: ${copied}`);
 JS
 # Upstream deliberately permits a missing dataset ONLY to bootstrap this debug tool.
 # The release build below still requires the real generated dataset. No bypass or placeholder.
+python3 /mds/scripts/fido_mds.py verify --blob /bundle/fido-mds.jwt --crl-dir /bundle/mds-crls
 CARGO_PROFILE_DEV_DEBUG=0 cargo run --frozen --bin fido-mds-prep -- \
     --source /bundle/fido-mds.jwt --out assets/fido_mds/dataset.bin
 test -s assets/fido_mds/dataset.bin

@@ -1,0 +1,27 @@
+name: FIDO MDS refresh tracking
+on:
+  schedule:
+    - cron: '17 7 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: fido-mds-refresh
+  cancel-in-progress: false
+jobs:
+  track:
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Verify feed and report newer serial in one issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/fido-mds-tracking.py --repo "${GITHUB_REPOSITORY}"

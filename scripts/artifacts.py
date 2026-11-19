@@ -7,6 +7,10 @@ from pathlib import Path
 import re
 import tarfile
 import urllib.request
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fido_mds
 
 
 def validate(lock):
@@ -64,6 +68,12 @@ def main():
     if args.mode == 'acquire':
         for item in lock['downloads'].values():
             acquire(item, args.output)
+        fido = lock['downloads']['fido-mds']
+        crls = args.output / 'mds-crls'
+        fido_mds.fetch_crls(crls)
+        evidence = fido_mds.verify((args.output / fido['filename']).read_bytes(), fido, crls)
+        if evidence != fido:
+            raise ValueError('FIDO feed differs from lock')
         verify_source(lock, args.output)
         for item in lock['packages']:
             acquire(item, args.output / 'rpms')

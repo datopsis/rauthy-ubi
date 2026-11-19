@@ -58,9 +58,9 @@
     },
     "fido-mds": {
       "url": "https://mds.fidoalliance.org/",
-      "sha256": "bcdf74e5c25d529de6007f1e49b53bed01d38ce57452e2585f71c7fd95ff0b09",
+      "sha256": "d2ad4e42a8afbd74a34b3e997ae46d43df9e046f8a5bf1feda97206d8c84e0bb",
       "filename": "fido-mds.jwt",
-      "blob_number": 301,
+      "blob_number": 302,
       "next_update": "2026-12-01"
     },
     "cargo-auditable": {
