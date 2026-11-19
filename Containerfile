@@ -23,8 +23,12 @@ RUN sha256sum --check SHA256SUMS \
     && mkdir /cargo-auditable \
     && tar -xf cargo-auditable.crate -C /cargo-auditable --strip-components=1
 ENV PATH="/node/bin:/wasm-tools:/usr/local/bin:/usr/bin:/bin" CARGO_BUILD_JOBS=2 CARGO_HOME=/cargo OPENSSL_NO_VENDOR=1
+COPY scripts/fido_mds.py /mds/scripts/fido_mds.py
+COPY artifacts/fido-mds/ /mds/artifacts/fido-mds/
+COPY artifacts/locks/ /mds/artifacts/locks/
 WORKDIR /src
-RUN test "$(node --version)" = "v22.23.5" \
+RUN python3 /mds/scripts/fido_mds.py verify --blob /bundle/fido-mds.jwt --crl-dir /bundle/mds-crls \
+    && test "$(node --version)" = "v22.23.5" \
     && test "$(npm --version)" = "10.9.9" \
     && rustc --version | grep -F "rustc 1.95.0 " \
     && sha256sum Cargo.lock frontend/package-lock.json > /upstream-locks.sha256 \
